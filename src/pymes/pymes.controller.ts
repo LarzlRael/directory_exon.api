@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
   Res,
   UploadedFiles,
   UseGuards,
@@ -58,6 +59,20 @@ export class PymesController {
     return res.json({
       ok: true,
       message: 'nueva pyme agregada correctamente',
+    });
+  }
+  @Put('/updatePyme/:id')
+  @UseGuards(AuthGuard('jwt'))
+  async updatePyme(
+    @Res() res: Response,
+    @Body() pymeDTO: PymeDTO,
+    @GetUser() user: User,
+    @Param('id') id,
+  ) {
+    await this.pymeService.updatePyme(id, pymeDTO);
+    return res.json({
+      ok: true,
+      message: 'nueva editada agregada correctamente',
     });
   }
 

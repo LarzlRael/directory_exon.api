@@ -162,6 +162,18 @@ export class PymesService {
       return false;
     }
   }
+  async updatePyme(id: string, pymeDTO: PymeDTO): Promise<boolean> {
+    if (!verifyValidId(id)) {
+      return false;
+    }
+    const currentPyme = await this.pymeModel.findOne({ _id: id });
+
+    if (currentPyme == null || currentPyme == undefined) {
+      return false;
+    }
+    delete pymeDTO._id;
+    await this.pymeModel.findByIdAndUpdate(id, { ...pymeDTO });
+  }
   async verifyPyme(id: string): Promise<boolean> {
     if (!verifyValidId(id)) {
       return false;

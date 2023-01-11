@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsEmail,
   IsEnum,
   IsLatLong,
@@ -50,7 +51,7 @@ export class PymeDTO {
   @IsOptional()
   direccion: string;
 
-  @IsString()
+  @IsArray()
   @IsOptional()
   redes_sociales: RedesSocialesDto[];
 
