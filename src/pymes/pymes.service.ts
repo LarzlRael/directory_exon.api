@@ -1,4 +1,8 @@
-import { Injectable, UploadedFile } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  UploadedFile,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { UploadApiResponse, v2 } from 'cloudinary';
 import { Model } from 'mongoose';
@@ -72,35 +76,47 @@ export class PymesService {
   async addImages(
     id: string,
     @UploadedFile() files: Array<Express.Multer.File>,
-  ): Promise<boolean> {
+    idUser: string,
+  ) {
     const getPyme = await this.pymeModel.findOne({ _id: id });
 
     if (getPyme == null || getPyme == undefined) {
-      return false;
+      new InternalServerErrorException('not found pyme with that id');
     }
-    files.forEach((file) => {
-      let uploadApiResponse: UploadApiResponse;
+    if (!files) {
+      new InternalServerErrorException('Theres is no files');
+    }
 
-      const upload = v2.uploader.upload_stream(
-        { folder: 'neo_directorio' },
-        async (error, result) => {
-          if (error) {
-            console.log(error);
-            return false;
-          }
-          uploadApiResponse = result;
-          try {
-            getPyme.urlImages.push(uploadApiResponse.url);
-            await getPyme.save();
-          } catch (error) {
-            console.log(error);
-          }
-        },
-      );
+    await Promise.all(
+      files.map(async (file) => {
+        console.log(file);
+        let uploadApiResponse: UploadApiResponse;
 
-      toStream(file.buffer).pipe(upload);
-    });
-    return true;
+        const upload = v2.uploader.upload_stream(
+          { folder: 'neo_directorio' },
+          async (error, result) => {
+            console.log(result);
+            if (error) {
+              return new InternalServerErrorException(error);
+            }
+            uploadApiResponse = result;
+            try {
+              getPyme.idUser = idUser;
+              getPyme.categoria = 'pyme2';
+              getPyme.urlImages.push(uploadApiResponse.secure_url);
+
+              const saved = await getPyme.save();
+
+              return saved;
+            } catch (error) {
+              console.log(error);
+              return new InternalServerErrorException(error);
+            }
+          },
+        );
+        toStream(file.buffer).pipe(upload);
+      }),
+    );
   }
 
   async addProfileImage(
@@ -139,14 +155,12 @@ export class PymesService {
 
     return true;
   }
-  async changeMainImage(id: string, index: number): Promise<boolean> {
+  async changeMainImage(id: string, index: number) {
     const currentPyme = await this.pymeModel.findOne({ _id: id });
 
     if (index >= currentPyme.urlImages.length) {
-      return false;
+      new InternalServerErrorException("index doesn't exist");
     }
-
-    /* console.log(JSON.stringify(currentPyme.urlImages, null, " ")); */
 
     try {
       await this.pymeModel.findByIdAndUpdate(
@@ -155,11 +169,9 @@ export class PymesService {
           urlImages: swapArrayElements(currentPyme.urlImages, 0, index),
         },
       );
-
-      return true;
     } catch (error) {
+      new InternalServerErrorException(error);
       console.log(error);
-      return false;
     }
   }
   async updatePyme(id: string, pymeDTO: PymeDTO): Promise<boolean> {

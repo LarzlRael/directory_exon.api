@@ -103,11 +103,12 @@ export class PymesController {
       fileFilter: imageFileFilter,
     }),
   )
-  async addImages(
+  addImages(
     @Param('id') id,
     @UploadedFiles() files: Array<Express.Multer.File>,
+    @GetUser() user: User,
   ) {
-    await this.pymeService.addImages(id, files);
+    return this.pymeService.addImages(id, files, user._id);
   }
 
   @Post('/addProfile/:id')
@@ -137,22 +138,8 @@ export class PymesController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/changeMainImage/:id/:index')
-  async changeMainImage(
-    @Res() res: Response,
-    @Param('id') id,
-    @Param('index') index,
-  ) {
-    if (await this.pymeService.changeMainImage(id, index)) {
-      res.json({
-        ok: true,
-        message: 'Imagen principal cambiada',
-      });
-    } else {
-      res.json({
-        ok: false,
-        message: 'hubo un error',
-      });
-    }
+  async changeMainImage(@Param('id') id, @Param('index') index) {
+    return this.pymeService.changeMainImage(id, index);
   }
 
   @Get('/verificarPyme/:id')
