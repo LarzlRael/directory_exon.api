@@ -1,19 +1,17 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dts';
 import { Response } from 'express';
+import { GetUser } from 'src/decorators/get-user.decorator';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('/login')
-  async login(@Res() res: Response, @Body() authDto: AuthDto) {
-    const response = await this.authService.signIn(authDto);
-    res.json({
-      ok: true,
-      token: response,
-    });
+  login(@Body() authDto: AuthDto) {
+    return this.authService.signIn(authDto);
   }
   @Post('/register')
   async singUp(@Res() res: Response, @Body() authDto: AuthDto) {
@@ -28,5 +26,10 @@ export class AuthController {
         msg: 'Error',
       });
     }
+  }
+  @Post('/renewToken')
+  @UseGuards(AuthGuard('jwt'))
+  renewToken(@GetUser() user) {
+    return this.authService.renewToken(user);
   }
 }

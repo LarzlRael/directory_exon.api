@@ -38,9 +38,7 @@ export class AuthService {
     const user = await this.authModel.findOne({ username });
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      const payload: JWtPayload = { username };
-      const accessToken: string = await this.jwtService.sign(payload);
-      return { accessToken };
+      return this.userToReturn(user.username);
     } else {
       throw new UnauthorizedException('please check your login credential');
     }
@@ -49,5 +47,13 @@ export class AuthService {
   async getOneUser(username: string): Promise<User> {
     const user = await this.authModel.findOne({ username });
     return user;
+  }
+  async renewToken(User: User) {
+    return this.userToReturn(User.username);
+  }
+  async userToReturn(userName) {
+    const payload: JWtPayload = { username: userName };
+    const accessToken: string = await this.jwtService.sign(payload);
+    return { accessToken };
   }
 }

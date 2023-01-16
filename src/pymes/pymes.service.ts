@@ -6,9 +6,9 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { UploadApiResponse, v2 } from 'cloudinary';
 import { Model } from 'mongoose';
-import { PymeDTO, RedesSocialesDto } from './dto/pyme.dto';
+import { PymeDTO } from './dto/pyme.dto';
 import { PymeModel } from './interfaces/project.interface';
-import { verifyValidId, swapArrayElements } from '../utils';
+import { verifyValidId } from '../utils';
 import { User } from 'src/auth/dto/schema/User.interface';
 import { Verify } from './verify.enum';
 
@@ -54,23 +54,16 @@ export class PymesService {
     }
   }
 
-  async addSocialNetworks(
-    id: string,
-    socialNetworks: RedesSocialesDto,
-  ): Promise<boolean> {
+  async deletePyme(id: string) {
     const getPyme = await this.pymeModel.findOne({ _id: id });
 
-    if (verifyValidId(id)) {
-      if (getPyme) {
-        getPyme.redes_sociales.push(socialNetworks);
-        await getPyme.save();
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      return false;
+    if (!verifyValidId(id)) {
+      return new InternalServerErrorException('not valid id');
     }
+    if (!getPyme) {
+      return new InternalServerErrorException('not found pyme with that id');
+    }
+    await this.pymeModel.findByIdAndRemove(id);
   }
 
   async addImages(
@@ -78,6 +71,7 @@ export class PymesService {
     @UploadedFile() files: Array<Express.Multer.File>,
     idUser: string,
   ) {
+    console.log(files);
     const getPyme = await this.pymeModel.findOne({ _id: id });
 
     if (getPyme == null || getPyme == undefined) {
@@ -97,6 +91,7 @@ export class PymesService {
           async (error, result) => {
             console.log(result);
             if (error) {
+              console.log(error);
               return new InternalServerErrorException(error);
             }
             uploadApiResponse = result;
@@ -138,22 +133,19 @@ export class PymesService {
       async (error, result) => {
         if (error) {
           console.log(error);
-          return false;
+          return new InternalServerErrorException(error);
         }
         uploadApiResponse = result;
-
         try {
           getPyme.profileImage = uploadApiResponse.url;
           await getPyme.save();
         } catch (error) {
           console.log(error);
+          return new InternalServerErrorException(error);
         }
       },
     );
-
     toStream(file.buffer).pipe(upload);
-
-    return true;
   }
   async changeMainImage(id: string, newImageOrder: string[]) {
     /* const currentPyme = await this.pymeModel.findOne({ _id: id }); */
@@ -170,7 +162,7 @@ export class PymesService {
       new InternalServerErrorException(error);
     }
   }
-  async updatePyme(id: string, pymeDTO: PymeDTO): Promise<boolean> {
+  async updatePyme(id: string, pymeDTO: PymeDTO) {
     if (!verifyValidId(id)) {
       return false;
     }
@@ -180,8 +172,9 @@ export class PymesService {
       return false;
     }
     delete pymeDTO._id;
-    await this.pymeModel.findByIdAndUpdate(id, { ...pymeDTO });
+    return await this.pymeModel.findByIdAndUpdate(id, { ...pymeDTO });
   }
+
   async verifyPyme(id: string): Promise<boolean> {
     if (!verifyValidId(id)) {
       return false;

@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -63,37 +64,8 @@ export class PymesController {
   }
   @Put('/updatePyme/:id')
   @UseGuards(AuthGuard('jwt'))
-  async updatePyme(
-    @Res() res: Response,
-    @Body() pymeDTO: PymeDTO,
-    @GetUser() user: User,
-    @Param('id') id,
-  ) {
+  async updatePyme(@Body() pymeDTO: PymeDTO, @Param('id') id) {
     await this.pymeService.updatePyme(id, pymeDTO);
-    return res.json({
-      ok: true,
-      message: 'nueva editada agregada correctamente',
-    });
-  }
-
-  @Post('/addSocialNetwork/:id')
-  @UseGuards(AuthGuard('jwt'))
-  async addSocialNetwork(
-    @Res() res: Response,
-    @Param('id') id,
-    @Body() socialNetWork: RedesSocialesDto,
-  ) {
-    if (await this.pymeService.addSocialNetworks(id, socialNetWork)) {
-      res.json({
-        ok: true,
-        message: 'red social agregada',
-      });
-    } else {
-      res.json({
-        ok: false,
-        message: 'no se encontro el id',
-      });
-    }
   }
 
   @Post('/addedImage/:id')
@@ -111,7 +83,7 @@ export class PymesController {
     return this.pymeService.addImages(id, files, user._id);
   }
 
-  @Post('/addProfile/:id')
+  @Put('/addProfile/:id')
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(
     FileInterceptor('file', {
@@ -119,27 +91,21 @@ export class PymesController {
     }),
   )
   async addProfileImage(
-    @Res() res: Response,
     @Param('id') id,
     @UploadedFile() fileProfileImage: Express.Multer.File,
   ) {
-    if (await this.pymeService.addProfileImage(id, fileProfileImage)) {
-      res.status(HttpStatus.OK).json({
-        ok: true,
-        msg: 'Imagen de perfil agregada',
-      });
-    } else {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        ok: false,
-        msg: 'Error al subir imagen',
-      });
-    }
+    return this.pymeService.addProfileImage(id, fileProfileImage);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Put('/changeOrderImage/:id')
   async changeMainImage(@Param('id') id, @Body() newOrder: string[]) {
     return this.pymeService.changeMainImage(id, newOrder);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/deletePyme/:id')
+  async deletePyme(@Param('id') id) {
+    return this.pymeService.deletePyme(id);
   }
 
   @Get('/verificarPyme/:id')
