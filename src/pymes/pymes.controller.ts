@@ -137,9 +137,9 @@ export class PymesController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Get('/changeMainImage/:id/:index')
-  async changeMainImage(@Param('id') id, @Param('index') index) {
-    return this.pymeService.changeMainImage(id, index);
+  @Put('/changeOrderImage/:id')
+  async changeMainImage(@Param('id') id, @Body() newOrder: string[]) {
+    return this.pymeService.changeMainImage(id, newOrder);
   }
 
   @Get('/verificarPyme/:id')

@@ -155,23 +155,19 @@ export class PymesService {
 
     return true;
   }
-  async changeMainImage(id: string, index: number) {
-    const currentPyme = await this.pymeModel.findOne({ _id: id });
-
-    if (index >= currentPyme.urlImages.length) {
-      new InternalServerErrorException("index doesn't exist");
-    }
+  async changeMainImage(id: string, newImageOrder: string[]) {
+    /* const currentPyme = await this.pymeModel.findOne({ _id: id }); */
 
     try {
       await this.pymeModel.findByIdAndUpdate(
         { _id: id },
         {
-          urlImages: swapArrayElements(currentPyme.urlImages, 0, index),
+          urlImages: newImageOrder,
         },
       );
     } catch (error) {
-      new InternalServerErrorException(error);
       console.log(error);
+      new InternalServerErrorException(error);
     }
   }
   async updatePyme(id: string, pymeDTO: PymeDTO): Promise<boolean> {
