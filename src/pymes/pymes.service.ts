@@ -174,21 +174,4 @@ export class PymesService {
     delete pymeDTO._id;
     return await this.pymeModel.findByIdAndUpdate(id, { ...pymeDTO });
   }
-
-  async verifyPyme(id: string): Promise<boolean> {
-    if (!verifyValidId(id)) {
-      return false;
-    }
-
-    try {
-      await this.pymeModel.findByIdAndUpdate(
-        { _id: id },
-        { verificado: Verify.VERIFICADO },
-      );
-      return true;
-    } catch (error) {
-      console.log(error);
-      return false;
-    }
-  }
 }

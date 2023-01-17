@@ -6,14 +6,12 @@ import {
   Param,
   Post,
   Put,
-  Res,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { PymesService } from './pymes.service';
-import { Response } from 'express';
-import { PymeDTO, RedesSocialesDto } from './dto/pyme.dto';
+import { PymeDTO } from './dto/pyme.dto';
 import { Body, UploadedFile } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { imageFileFilter } from '../utils';
@@ -30,7 +28,7 @@ export class PymesController {
   }
 
   /* @Get('/:nombre/:departament') */
-  @Get('/:nombre/')
+  @Get('/:nombre')
   getOne(@Param('nombre') nombre) {
     return this.pymeService.getOnePymeByName(nombre);
   }
@@ -51,16 +49,8 @@ export class PymesController {
 
   @Post('/newPyme')
   @UseGuards(AuthGuard('jwt'))
-  async newPyme(
-    @Res() res: Response,
-    @Body() pymeDTO: PymeDTO,
-    @GetUser() user: User,
-  ) {
+  async newPyme(@Body() pymeDTO: PymeDTO, @GetUser() user: User) {
     await this.pymeService.addnewPyme(pymeDTO, user);
-    return res.json({
-      ok: true,
-      message: 'nueva pyme agregada correctamente',
-    });
   }
   @Put('/updatePyme/:id')
   @UseGuards(AuthGuard('jwt'))
@@ -106,21 +96,5 @@ export class PymesController {
   @Delete('/deletePyme/:id')
   async deletePyme(@Param('id') id) {
     return this.pymeService.deletePyme(id);
-  }
-
-  @Get('/verificarPyme/:id')
-  @UseGuards(AuthGuard('jwt'))
-  async verifyPyme(@Res() res: Response, @Param('id') id) {
-    if (await this.pymeService.verifyPyme(id)) {
-      res.json({
-        ok: true,
-        message: 'Pyme Verificado',
-      });
-    } else {
-      res.json({
-        ok: false,
-        message: 'hubo un error',
-      });
-    }
   }
 }

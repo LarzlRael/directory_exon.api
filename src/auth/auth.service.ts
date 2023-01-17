@@ -14,8 +14,12 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async registerUser(authDto: AuthDto): Promise<boolean> {
+  async registerUser(authDto: AuthDto) {
     const { username, password } = authDto;
+    const getUser = await this.authModel.findOne({ username });
+    if (getUser) {
+      new UnauthorizedException('user already exist');
+    }
     const salt = await bcrypt.genSalt();
     const hashedPassowrd = await bcrypt.hash(password, salt);
 
@@ -24,12 +28,10 @@ export class AuthService {
       password: hashedPassowrd,
     });
     try {
-      await user.save();
-      return true;
+      return await user.save();
     } catch (error) {
       console.log(error);
-      console.log('error linea duplicada');
-      return false;
+      return new UnauthorizedException('something went wrong');
     }
   }
   async signIn(authCredentialDto: AuthDto): Promise<{ accessToken: string }> {

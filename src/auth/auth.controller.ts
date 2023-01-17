@@ -1,7 +1,6 @@
-import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dts';
-import { Response } from 'express';
 import { GetUser } from 'src/decorators/get-user.decorator';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -14,18 +13,8 @@ export class AuthController {
     return this.authService.signIn(authDto);
   }
   @Post('/register')
-  async singUp(@Res() res: Response, @Body() authDto: AuthDto) {
-    if (await this.authService.registerUser(authDto)) {
-      res.json({
-        ok: true,
-        msg: 'usuario creado correctamente',
-      });
-    } else {
-      res.json({
-        ok: false,
-        msg: 'Error',
-      });
-    }
+  singUp(@Body() authDto: AuthDto) {
+    return this.authService.registerUser(authDto);
   }
   @Post('/renewToken')
   @UseGuards(AuthGuard('jwt'))
