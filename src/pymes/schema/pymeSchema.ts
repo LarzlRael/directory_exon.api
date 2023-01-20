@@ -9,6 +9,10 @@ export const PymeSchema = new Schema(
     telefono: String,
     localizacion: String,
     direccion: String,
+    visible: {
+      type: Boolean,
+      default: true,
+    },
     urlImages: [{ type: String }],
     urlNegocio: String,
     description: String,
@@ -29,26 +33,3 @@ export const PymeSchema = new Schema(
     timestamps: true,
   },
 );
-
-/* @IsString()
-@IsNotEmpty()
-nombre: string;
-propietario: string;
-categoria: string;
-
-@IsOptional()
-urlNegocio: string;
-UrlImages: string[];
-@IsEmail()
-email: string;
-
-@IsString()
-@IsOptional()
-telefono: string;
-localizacion: string;
-direccion: string;
-description: string;
-redes_sociales: RedesSociales[];
-
-@IsEnum(VerifyType)
-verificado: VerifyType; */

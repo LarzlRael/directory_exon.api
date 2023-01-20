@@ -10,7 +10,7 @@ import { PymeDTO } from './dto/pyme.dto';
 import { PymeModel } from './interfaces/project.interface';
 import { verifyValidId } from '../utils';
 import { User } from 'src/auth/dto/schema/User.interface';
-import { Verify } from './verify.enum';
+/* import { Verify } from './verify.enum'; */
 
 import toStream = require('buffer-to-stream');
 
@@ -36,6 +36,7 @@ export class PymesService {
       .find()
       .sort({ verificado: 'desc' })
       .populate('Users');
+
     return allPymes;
   }
   async findPymeByField(
@@ -66,12 +67,24 @@ export class PymesService {
     await this.pymeModel.findByIdAndRemove(id);
   }
 
+  async showOrHidePyme(id: string) {
+    const getPyme = await this.pymeModel.findOne({ _id: id });
+
+    if (!verifyValidId(id)) {
+      return new InternalServerErrorException('not valid id');
+    }
+    if (!getPyme) {
+      return new InternalServerErrorException('not found pyme with that id');
+    }
+    getPyme.visible = !getPyme.visible;
+    await getPyme.save();
+  }
+
   async addImages(
     id: string,
     @UploadedFile() files: Array<Express.Multer.File>,
     idUser: string,
   ) {
-    console.log(files);
     const getPyme = await this.pymeModel.findOne({ _id: id });
 
     if (getPyme == null || getPyme == undefined) {
@@ -99,7 +112,6 @@ export class PymesService {
               getPyme.idUser = idUser;
               getPyme.categoria = 'pyme2';
               getPyme.urlImages.push(uploadApiResponse.secure_url);
-
               const saved = await getPyme.save();
 
               return saved;

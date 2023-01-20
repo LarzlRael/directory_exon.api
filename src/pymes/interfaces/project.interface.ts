@@ -4,10 +4,8 @@ export interface PymeModel extends Document {
   propietario: string;
   categoria: string;
   urlNegocio: string;
-
   urlImages: string[];
   email: string;
-
   telefono: string;
   localizacion: string;
   coords: { lat: string; lng: string };
@@ -19,6 +17,7 @@ export interface PymeModel extends Document {
   redes_sociales: RedesSocialesDto[];
   verificado: Verify;
   idUser: string;
+  visible: boolean;
 }
 
 export interface RedesSocialesDto {

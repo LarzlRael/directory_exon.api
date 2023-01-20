@@ -27,7 +27,6 @@ export class PymesController {
     return this.pymeService.getAllPymes();
   }
 
-  /* @Get('/:nombre/:departament') */
   @Get('/:nombre')
   getOne(@Param('nombre') nombre) {
     return this.pymeService.getOnePymeByName(nombre);
@@ -49,13 +48,13 @@ export class PymesController {
 
   @Post('/newPyme')
   @UseGuards(AuthGuard('jwt'))
-  async newPyme(@Body() pymeDTO: PymeDTO, @GetUser() user: User) {
-    await this.pymeService.addnewPyme(pymeDTO, user);
+  newPyme(@Body() pymeDTO: PymeDTO, @GetUser() user: User) {
+    this.pymeService.addnewPyme(pymeDTO, user);
   }
   @Put('/updatePyme/:id')
   @UseGuards(AuthGuard('jwt'))
-  async updatePyme(@Body() pymeDTO: PymeDTO, @Param('id') id) {
-    await this.pymeService.updatePyme(id, pymeDTO);
+  updatePyme(@Body() pymeDTO: PymeDTO, @Param('id') id) {
+    this.pymeService.updatePyme(id, pymeDTO);
   }
 
   @Post('/addedImage/:id')
@@ -80,7 +79,7 @@ export class PymesController {
       fileFilter: imageFileFilter,
     }),
   )
-  async addProfileImage(
+  addProfileImage(
     @Param('id') id,
     @UploadedFile() fileProfileImage: Express.Multer.File,
   ) {
@@ -89,12 +88,18 @@ export class PymesController {
 
   @UseGuards(AuthGuard('jwt'))
   @Put('/changeOrderImage/:id')
-  async changeMainImage(@Param('id') id, @Body() newOrder: string[]) {
+  changeMainImage(@Param('id') id, @Body() newOrder: string[]) {
     return this.pymeService.changeMainImage(id, newOrder);
   }
+
+  @Put('/changeVisibility/:id')
+  changeVisibility(@Param('id') id) {
+    return this.pymeService.showOrHidePyme(id);
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Delete('/deletePyme/:id')
-  async deletePyme(@Param('id') id) {
+  deletePyme(@Param('id') id) {
     return this.pymeService.deletePyme(id);
   }
 }
