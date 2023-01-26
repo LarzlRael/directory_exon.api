@@ -16,8 +16,9 @@ import { Body, UploadedFile } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { imageFileFilter } from '../utils';
 import { AuthGuard } from '@nestjs/passport';
-import { GetUser } from 'src/decorators/get-user.decorator';
-import { User } from 'src/auth/dto/schema/User.interface';
+
+import { User } from '../auth/dto/schema/User.interface';
+import { GetUser } from '../decorators/get-user.decorator';
 
 @Controller('pymes')
 export class PymesController {
@@ -30,6 +31,11 @@ export class PymesController {
   @Get('/:nombre')
   getOne(@Param('nombre') nombre) {
     return this.pymeService.getOnePymeByName(nombre);
+  }
+  @Get('/getByPyme/:id')
+  @UseGuards(AuthGuard('jwt'))
+  getOnePymeById(@Param('id') id) {
+    return this.pymeService.getOnePymeById(id);
   }
 
   @Get('/:field/:query/:field2/:query2')
@@ -49,12 +55,12 @@ export class PymesController {
   @Post('/newPyme')
   @UseGuards(AuthGuard('jwt'))
   newPyme(@Body() pymeDTO: PymeDTO, @GetUser() user: User) {
-    this.pymeService.addnewPyme(pymeDTO, user);
+    return this.pymeService.addnewPyme(pymeDTO, user);
   }
   @Put('/updatePyme/:id')
   @UseGuards(AuthGuard('jwt'))
   updatePyme(@Body() pymeDTO: PymeDTO, @Param('id') id) {
-    this.pymeService.updatePyme(id, pymeDTO);
+    return this.pymeService.updatePyme(id, pymeDTO);
   }
 
   @Post('/addedImage/:id')

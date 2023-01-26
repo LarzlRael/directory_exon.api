@@ -9,7 +9,7 @@ import { Model } from 'mongoose';
 import { PymeDTO } from './dto/pyme.dto';
 import { PymeModel } from './interfaces/project.interface';
 import { verifyValidId } from '../utils';
-import { User } from 'src/auth/dto/schema/User.interface';
+import { User } from '../auth/dto/schema/User.interface';
 /* import { Verify } from './verify.enum'; */
 
 import toStream = require('buffer-to-stream');
@@ -38,6 +38,14 @@ export class PymesService {
       .populate('Users');
 
     return allPymes;
+  }
+  async getOnePymeById(id: string) {
+    const onePyme = await this.pymeModel
+      .findOne({
+        _id: id,
+      })
+      .populate('Users');
+    return onePyme;
   }
   async findPymeByField(
     field: string,
@@ -176,14 +184,18 @@ export class PymesService {
   }
   async updatePyme(id: string, pymeDTO: PymeDTO) {
     if (!verifyValidId(id)) {
-      return false;
+      return new InternalServerErrorException('not valid id');
     }
     const currentPyme = await this.pymeModel.findOne({ _id: id });
 
     if (currentPyme == null || currentPyme == undefined) {
-      return false;
+      return new InternalServerErrorException('not found pyme with that id');
     }
     delete pymeDTO._id;
-    return await this.pymeModel.findByIdAndUpdate(id, { ...pymeDTO });
+    try {
+      return await this.pymeModel.updateOne({ _id: id }, { ...pymeDTO });
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
