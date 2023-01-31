@@ -7,6 +7,7 @@ export const UserSchema = new Schema(
       unique: true,
     },
     password: String,
+    email: String,
   },
   {
     timestamps: true,

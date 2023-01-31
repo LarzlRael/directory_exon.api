@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './dto/schema/User.interface';
-import { AuthDto } from './dto/auth.dts';
+import { AuthDtoRegister, AuthDto } from './dto/auth.dts';
 import * as bcrypt from 'bcrypt';
 import { JWtPayload } from './jwt.strategy';
 
@@ -14,18 +14,18 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async registerUser(authDto: AuthDto) {
-    const { username, password } = authDto;
-    const getUser = await this.authModel.findOne({ username });
+  async registerUser(authDto: AuthDtoRegister) {
+    const { username, password, email } = authDto;
+    const getUser = await this.authModel.findOne({ username, email });
     if (getUser) {
       new UnauthorizedException('user already exist');
     }
     const salt = await bcrypt.genSalt();
-    const hashedPassowrd = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = new this.authModel({
       username,
-      password: hashedPassowrd,
+      password: hashedPassword,
     });
     try {
       return await user.save();
@@ -40,22 +40,23 @@ export class AuthService {
     const user = await this.authModel.findOne({ username });
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      return this.userToReturn(user.username);
+      return this.userToReturn(user);
     } else {
       throw new UnauthorizedException('please check your login credential');
     }
   }
 
   async getOneUser(username: string): Promise<User> {
-    const user = await this.authModel.findOne({ username });
-    return user;
+    return await this.authModel.findOne({ username });
   }
-  async renewToken(User: User) {
-    return this.userToReturn(User.username);
+  async renewToken(user: User) {
+    return this.userToReturn(user);
   }
-  async userToReturn(userName) {
-    const payload: JWtPayload = { username: userName };
+  async userToReturn(user: User) {
+    const payload: JWtPayload = { username: user.username };
     const accessToken: string = await this.jwtService.sign(payload);
-    return { accessToken };
+    return {
+      accessToken,
+    };
   }
 }

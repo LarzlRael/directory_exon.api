@@ -1,6 +1,6 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthDto } from './dto/auth.dts';
+import { AuthDtoRegister, AuthDto } from './dto/auth.dts';
 import { GetUser } from '../decorators/get-user.decorator';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -13,7 +13,7 @@ export class AuthController {
     return this.authService.signIn(authDto);
   }
   @Post('/register')
-  singUp(@Body() authDto: AuthDto) {
+  singUp(@Body() authDto: AuthDtoRegister) {
     return this.authService.registerUser(authDto);
   }
   @Post('/renewToken')
